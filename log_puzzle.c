@@ -98,7 +98,8 @@ main(int argc, char *argv[])
 
 }
 
-struct urlnode *puzzle_urls(char *file, struct urlnode *root)
+/* returns a tree containing all the urls with word 'puzzle' in it*/
+struct urlnode *puzzle_urls(char *file, struct urlnode *root)	
 {
 	FILE *fp;
 	int len = 0;
@@ -172,6 +173,7 @@ int contains(char *u,char *pat)
 	return 0;
 }
 
+/* insert a new url in a tree */
 struct urlnode *url_insert(struct urlnode *p, char *url)
 {
 	int cond;
@@ -221,8 +223,10 @@ int returnTail(char *s)		/* returns the string after the last '/' */
 			return i + 1;
 }
 
-/* if the url ends in the pattern "-wordchars-wordchars.jpg", e.g. "http://example.com/foo/puzzle/bar-abab-baaa.jpg", then the url
- * will be represented by the second word in the sort (e.g. "baaa"). otherwise with the full url
+/*	if the url ends in the pattern "-wordchars-wordchars.jpg", 
+ *	e.g. "http://example.com/foo/puzzle/bar-abab-baaa.jpg", 
+ *	then the url will be represented by the second word in the 
+ *	sort (e.g. "baaa"). otherwise with the full url
  */
 char *endsInPattern(char *s)
 {
@@ -244,6 +248,7 @@ char *endsInPattern(char *s)
 	return strdup(word);
 }
 
+/* download each url to a directory specified by the user */
 void download_to_dir(struct urlnode *p,char *dir,int *i)
 {
 	char filename[500] = {'\0'};
@@ -262,6 +267,7 @@ void download_to_dir(struct urlnode *p,char *dir,int *i)
 	}
 }
 
+/* return string representation of an integer */
 char *itoa(int num)
 {
 	char array[100],*ar;
@@ -298,6 +304,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
     return written;
 }
 
+/* download each image and store with name outfilename */
 void imageDownloader(char *url,char *outfilename)
 {
     CURL *curl;
