@@ -19,6 +19,7 @@ char *endsInPattern(char *s);
 struct urlnode *talloc(void);
 int contains(char *u,char *pat);
 void printTree(struct urlnode *node);
+void createIndexFile(char *dir,int i);
 void geturl(char *h,char *b,char *url);
 char *reverse(char *s,int start,int stop);
 void imageDownloader(char *url,char *outfilename);
@@ -35,15 +36,11 @@ struct urlnode{
 
 main(int argc, char *argv[])
 {
-	int j;
 	int i=0;
-	FILE *fp;
 	int todir = 0;
 	struct stat st = {0};
-	char imgsrc[500] = {'\0'};
 	char dir[500],logfile[500];
 	struct urlnode *root = NULL;
-	char indexname[100] = {'\0'};
 
 	if(argc == 1){
 		printf("\nusage : ./log_puzzle.out [--todir dir] logfilename\n\n");
@@ -75,21 +72,9 @@ main(int argc, char *argv[])
 	if(todir){
 		if(stat(dir,&st) == -1)					/* if dir doesn't exists */
 			mkdir(dir,S_IRWXU | S_IRWXG | S_IRWXO);		/* create it		 */
-		download_to_dir(root,dir,&i);
 
-		printf("\n\ncreating index.html ...\n");
-		strcat(indexname,dir);
-		strcat(indexname,"/index.html");
-		fp = fopen(indexname,"w");
-		fputs("<verbatim>\n<html>\n<body>\n",fp);
-		for(j=1;j<i;++j){
-			strcat(imgsrc,"<img src=\"img");
-			strcat(imgsrc,itoa(j));
-			strcat(imgsrc,"\">");
-		}
-		fputs(imgsrc,fp);
-		fputs("\n</body>\n</html>\n",fp);
-		fclose(fp);
+		download_to_dir(root,dir,&i);
+		createIndexFile(dir,i);
 	}
 	else{
 		printTree(root);
@@ -297,13 +282,6 @@ char *reverse(char *s,int start,int stop)
 	return reverse(s,start+1,stop-1);
 }
 
-size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
-{
-    size_t written;
-    written = fwrite(ptr, size, nmemb, stream);
-    return written;
-}
-
 /* download each image and store with name outfilename */
 void imageDownloader(char *url,char *outfilename)
 {
@@ -321,6 +299,35 @@ void imageDownloader(char *url,char *outfilename)
         curl_easy_cleanup(curl);
         fclose(fp);
     }   
+}
+
+size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream)
+{
+    size_t written;
+    written = fwrite(ptr, size, nmemb, stream);
+    return written;
+}
+
+void createIndexFile(char *dir,int i)
+{
+	int j;
+	FILE *fp;
+	char imgsrc[500] = {'\0'};
+	char indexname[5000] = {'\0'};
+
+	printf("\n\ncreating index.html ...\n");
+	strcat(indexname,dir);
+	strcat(indexname,"/index.html");
+	fp = fopen(indexname,"w");
+	fputs("<verbatim>\n<html>\n<body>\n",fp);
+	for(j=0;j<i;++j){
+		strcat(imgsrc,"<img src=\"img");
+		strcat(imgsrc,itoa(j));
+		strcat(imgsrc,"\">");
+	}
+	fputs(imgsrc,fp);
+	fputs("\n</body>\n</html>\n",fp);
+	fclose(fp);
 }
 
 void printTree(struct urlnode *node)
