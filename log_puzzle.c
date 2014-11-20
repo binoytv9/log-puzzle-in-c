@@ -27,6 +27,7 @@ void download_to_dir(struct urlnode *p,char *dir,int *i);
 struct urlnode *url_insert(struct urlnode *p, char *url);
 struct urlnode *puzzle_urls(char *file, struct urlnode *root);
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
+void checkArgument(int argc,char *argv[],int *todir,char *dir,char *logfile);
 
 struct urlnode{
 	char *url;
@@ -42,12 +43,31 @@ main(int argc, char *argv[])
 	char dir[500],logfile[500];
 	struct urlnode *root = NULL;
 
+	checkArgument(argc,argv,&todir,dir,logfile);
+	root = puzzle_urls(logfile,root);
+	if(todir){
+		if(stat(dir,&st) == -1)					/* if dir doesn't exists */
+			mkdir(dir,S_IRWXU | S_IRWXG | S_IRWXO);		/* create it		 */
+
+		download_to_dir(root,dir,&i);
+		createIndexFile(dir,i);
+	}
+	else{
+		printTree(root);
+		printf("\n\n");
+	}
+
+}
+
+/* checks arguments provided by the user */
+void checkArgument(int argc,char *argv[],int *todir,char *dir,char *logfile)
+{
 	if(argc == 1){
 		printf("\nusage : ./log_puzzle.out [--todir dir] logfilename\n\n");
 		exit(1);
 	}
 	if(strcmp(*++argv,"--todir") == 0){
-		todir = 1;
+		*todir = 1;
 		if(--argc > 1)
 			strcpy(dir,*++argv);
 		else{
@@ -66,21 +86,6 @@ main(int argc, char *argv[])
 		printf("\nusage : ./log_puzzle.out [--todir dir] logfilename\n\n");
 		exit(1);
 	}
-
-	root = puzzle_urls(logfile,root);
-
-	if(todir){
-		if(stat(dir,&st) == -1)					/* if dir doesn't exists */
-			mkdir(dir,S_IRWXU | S_IRWXG | S_IRWXO);		/* create it		 */
-
-		download_to_dir(root,dir,&i);
-		createIndexFile(dir,i);
-	}
-	else{
-		printTree(root);
-		printf("\n\n");
-	}
-
 }
 
 /* returns a tree containing all the urls with word 'puzzle' in it*/
